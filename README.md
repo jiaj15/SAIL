@@ -1,3 +1,18 @@
+### Train VAE
+```bash
+python train_VAE.py --expert-traj-path /home/$USER/data/demonstrations.pkl --state-dim 3 --output-path /home/$USER/data --size-per-traj 200
+```
+`demonstrations.pkl` should be a pickle containing a list of numpy arrays. Each numpy array is an expert trajectory (s_1, s_2, ..., s_t, s_t+1, .., s_N) with shape of (N, state_dim). N is the total number of steps. which is a fixed number specified in the argument `--size-per-traj`. state_dime is the dimension of state space.
+
+### Test VAE
+```python
+    model = VAE(state_dim)
+    model_dict = torch.load('vae.pt', map_location='cpu')
+    model.load_state_dict(model_dict)
+    model.eval
+
+```
+
 # State Alignment-based Imitation Learning
 We propose a state-based imitation learning method for cross-morphology imitation learning, by considering both the state visitation distribution and local transition alignment.
 
