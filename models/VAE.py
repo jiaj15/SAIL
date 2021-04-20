@@ -81,7 +81,7 @@ class VAE(torch.nn.Module):
         next_pred = self.get_next_states(state)
         return ((next_state-next_pred)**2).mean()
 
-    def train(self, input, target, epoch, optimizer, batch_size=128, beta=0.1):
+    def train(self, input, target, epoch, optimizer, batch_size=128, beta=0.1, use_weight=True):
         idxs = np.arange(input.shape[0])
         np.random.shuffle(idxs)
         num_batch = int(np.ceil(idxs.shape[-1] / batch_size))
@@ -91,17 +91,31 @@ class VAE(torch.nn.Module):
             for batch_num in range(num_batch):
                 batch_idxs = idxs[batch_num * batch_size : (batch_num + 1) * batch_size]
                 train_in = input[batch_idxs].float()
-                train_targ = target[batch_idxs].float()
+                if use_weight:
+                    train_targ = target[batch_idxs, :-1].float()
+                    weights = target[batch_idxs, -1].float().unsqueeze(1)
+                else:
+                    train_targ = target[batch_idxs].float()
+
                 optimizer.zero_grad()
                 dec = self.forward(train_in)
-                reconstruct_loss = ((train_targ-dec)**2).mean()
+                if use_weight:
+                    reconstruct_loss = (weights*(train_targ-dec)**2).mean()
+                else:
+                    reconstruct_loss = ((train_targ-dec)**2).mean()
+
                 ll = latent_loss(self.z_mean, self.z_sigma)
                 loss = reconstruct_loss + beta*ll
                 loss.backward()
                 optimizer.step()
         val_input = input[idxs]
-        val_target = target[idxs]
         val_dec = self.get_next_states(val_input)
-        loss = ((val_target-val_dec)**2).mean().item()
-        #print('vae loss', loss)
+
+        if use_weight:
+            val_target = target[idxs, :-1]
+            val_weight = target[idxs, -1].unsqueeze(1)       
+            loss = (val_weight*(val_target-val_dec)**2).mean().item()
+        else:
+            val_target = target[idxs]
+            loss = ((val_target-val_dec)**2).mean().item()
         return loss

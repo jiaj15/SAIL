@@ -105,7 +105,7 @@ def process_expert_traj(expert_traj_raw):
     #print('here',  expert_traj.shape)
     return expert_traj
 
-def generate_pairs(expert_traj_raw, state_dim, size_per_traj, max_step=6):
+def generate_pairs(expert_traj_raw, state_dim, size_per_traj, max_step=6, min_step=3):
     '''
     generate state pairs (s, s_t)
     note that s_t can be multi-step future (controlled by max_step)
@@ -116,7 +116,7 @@ def generate_pairs(expert_traj_raw, state_dim, size_per_traj, max_step=6):
         if len(traj) == 0:
             continue
         start = np.random.randint(0, len(traj), size_per_traj)
-        step = np.random.randint(1, max_step+1, size_per_traj)
+        step = np.random.randint(min_step, max_step+1, size_per_traj)
         end = np.minimum(start+step, len(traj)-1)
         start_state, end_state = traj[start], traj[end]
 
