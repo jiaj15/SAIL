@@ -70,7 +70,6 @@ def train_vae(args, dtype=torch.float32):
     print(state_tuples.shape)
     print(test_state_tuples.shape)
 
-
     goal_model = VAE(state_dim, latent_dim=128)
     optimizer_vae = torch.optim.Adam(goal_model.parameters(), lr=args.model_lr)
     save_path = '{}_softbc_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name, \
@@ -106,7 +105,6 @@ def train_vae(args, dtype=torch.float32):
         if i % args.lr_decay_rate == 0:
             adjust_lr(optimizer_vae, 2.)
         torch.save(goal_model.state_dict(), os.path.join(output_path, '{}_{}_vae.pt'.format(args.env_name, str(args.beta))))
-
 
 
 if __name__ == "__main__":
